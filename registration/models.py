@@ -5,10 +5,11 @@ import re
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.core.mail import EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives, get_connection
 from django.db import models
 from django.db import transaction
 from django.template.loader import render_to_string, get_template
+from django.template.context import Context
 from django.template import TemplateDoesNotExist
 from django.utils.translation import ugettext_lazy as _
 
@@ -18,8 +19,8 @@ except ImportError:
     datetime_now = datetime.datetime.now
 
 
+EMAIL_BACKEND = getattr(settings, "MAILER_EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
 SHA1_RE = re.compile('^[a-f0-9]{40}$')
-
 
 class RegistrationManager(models.Manager):
     """
@@ -294,10 +295,10 @@ class RegistrationProfile(models.Model):
             framework for details regarding these objects' interfaces.
 
         """
-        ctx_dict = {'activation_key': self.activation_key,
+        ctx_dict = Context({'activation_key': self.activation_key,
                     'expiration_days': settings.ACCOUNT_ACTIVATION_DAYS,
                     'user': self.user,
-                    'site': site}
+                    'site': site})
         subject = render_to_string('registration/activation_email_subject.txt',
                                    ctx_dict)
         # Email subject *must not* contain newlines
@@ -322,4 +323,5 @@ class RegistrationProfile(models.Model):
         if 'html' in message:
             email.attach_alternative(message['html'], 'text/html')
 
+        email.connection = get_connection(backend=EMAIL_BACKEND)
         email.send()
