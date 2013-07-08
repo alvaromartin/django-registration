@@ -62,8 +62,7 @@ urlpatterns = patterns('',
                        # Set up a pattern which will correspond to the
                        # custom 'disallowed_url' above.
                        url(r'^custom-disallowed/$',
-                           TemplateView.as_view,
-                           {'template': 'registration/registration_closed.html'},
+                           TemplateView.as_view(template_name='registration/registration_closed.html'),
                            name='registration_test_custom_disallowed'),
                        # Test the 'register' view with custom redirect
                        # on successful registration.
@@ -75,8 +74,7 @@ urlpatterns = patterns('',
                            ),
                        # Pattern for custom redirect set above.
                        url(r'^custom-success/$',
-                           TemplateView.as_view,
-                           {'template': 'registration/test_template_name.html'},
+                           TemplateView.as_view(template_name='registration/test_template_name.html'),
                            name='registration_test_custom_success_url'),
                        (r'', include('registration.backends.default.urls')),
                        )
